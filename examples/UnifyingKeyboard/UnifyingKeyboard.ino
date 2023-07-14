@@ -5,10 +5,6 @@
 #include "aes.hpp"
 
 #include "unifying.h"
-#include "unifying_protocol.h"
-#include "unifying_utils.h"
-#include "unifying_buffer.h"
-#include "unifying_const.h"
 
 #define CE_PIN 7
 #define CSN_PIN 8
