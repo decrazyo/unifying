@@ -27,12 +27,12 @@ https://github.com/nRF24/RF24
 - [x] Encrypted keystroke payloads
 
 ## See also
-[Hacking Logitech Unifying DC612 talk](https://www.youtube.com/watch?v=10lE96BBOF8)
-[nRF24 pseudo-promiscuous mode](http://travisgoodspeed.blogspot.com/2011/02/promiscuity-is-nrf24l01s-duty.html)
-[KeySweeper](https://github.com/samyk/keysweeper)
-[MouseJack](https://github.com/BastilleResearch/mousejack)
-[KeyJack](https://github.com/BastilleResearch/keyjack)
-[KeySniffer](https://github.com/BastilleResearch/keysniffer)
-[Of Mice And Keyboards](https://www.icaria.de/posts/2016/11/of-mice-and-keyboards/)
-[Logitech HID++ Specification](https://drive.google.com/folderview?id=0BxbRzx7vEV7eWmgwazJ3NUFfQ28)
-[Official Logitech Firmware](https://github.com/Logitech/fw_updates)
+[Hacking Logitech Unifying DC612 talk](https://www.youtube.com/watch?v=10lE96BBOF8)  
+[nRF24 pseudo-promiscuous mode](http://travisgoodspeed.blogspot.com/2011/02/promiscuity-is-nrf24l01s-duty.html)  
+[KeySweeper](https://github.com/samyk/keysweeper)  
+[MouseJack](https://github.com/BastilleResearch/mousejack)  
+[KeyJack](https://github.com/BastilleResearch/keyjack)  
+[KeySniffer](https://github.com/BastilleResearch/keysniffer)  
+[Of Mice And Keyboards](https://www.icaria.de/posts/2016/11/of-mice-and-keyboards/)  
+[Logitech HID++ Specification](https://drive.google.com/folderview?id=0BxbRzx7vEV7eWmgwazJ3NUFfQ28)  
+[Official Logitech Firmware](https://github.com/Logitech/fw_updates)  
