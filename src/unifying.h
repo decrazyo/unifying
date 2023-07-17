@@ -13,54 +13,18 @@
 #include "unifying_error.h"
 #include "unifying_data.h"
 #include "unifying_utils.h"
-#include "unifying_protocol.h"
+#include "unifying_state.h"
 #include "unifying_buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*!
- * Dequeue a received payload and perform basic verification.
- * 
- * \note    This function is intended for internal use only.
- *          This function may be made static in the future.
- * 
- * \param[in,out]   state           Unifying state information.
- * \param[out]      receive_entry   Pointer to an entry pointer. Used to return the dequeued payload.
- *                                  The pointer is only guaranteed to be valid
- *                                  if this function returns \ref UNIFYING_SUCCESS.
- * \param[in]       length          Expected length of the received payload.
- *                                  Supplying 0 as the payload length will skip the length check.
- * 
- * \return  \ref UNIFYING_BUFFER_EMPTY_ERROR if \ref unifying_state.receive_buffer "state.receive_buffer"
- *          is empty.
- * \return  \ref UNIFYING_CHECKSUM_ERROR if the received payload's computed checksum
- *          does not match its stated checksum.
- * \return  \ref UNIFYING_LENGTH_ERROR if the payload's length differs from \p length
- * \return  \ref UNIFYING_SUCCESS otherwise.
- */
-enum unifying_error unifying_response(struct unifying_state* state,
-                                      struct unifying_receive_entry** receive_entry,
-                                      uint8_t length);
-
-/*!
- * Dequeue a response payload and queue a HID++ payload for transmission.
- * 
- * \todo:   Define possible return values.
- * 
- * \note    This function is intended for internal use only.
- *          This function may be made static in the future.
- * 
- * \param[in,out]   state   Unifying state information.
- * 
- */
-enum unifying_error unifying_hidpp_1_0(struct unifying_state* state);
 
 /*!
  * Transmit and receive Unifying payloads at regular intervals.
  * 
- * \todo:   Define possible return values.
+ * \todo    Define possible return values.
  * 
  * Transmit a queued payload shortly before the current timeout has elapsed.
  * If an unhandled response payload is bufferd then a
@@ -101,12 +65,16 @@ enum unifying_error unifying_loop(struct unifying_state* state,
 /*!
  * Pair with a Unifying receiver.
  * 
- * \todo:   Define possible return values.
+ * \todo    Define possible return values.
  * 
  * \note    Upon successfully pairing, this function will populate
  *          \ref unifying_state.address "state.address" and
  *          \ref unifying_state.aes_key "state.aes_key".
  *          Those values are expected to be saved to non-volatile storage by the caller.
+ * 
+ * \todo    Document valid values for \p device_type
+ * 
+ * \todo    Document valid values for \p capabilities
  * 
  * \param[in,out]   state           Unifying state information.
  * \param[in]       id              Random value used for verifying the early stage of the pairing process.
@@ -114,11 +82,9 @@ enum unifying_error unifying_loop(struct unifying_state* state,
  *                                  This value becomes part of the device's AES encryption key.
  *                                  For added security, this should be a cryptographically secure random number.
  * \param[in]       device_type     Values indicating the device type.
- *                                  Valid values and their meaning are not yet documented.
  * \param[in]       crypto          A cryptographically secure random number, used for AES encryption key generation.
  * \param[in]       serial          Serial number of your device. The exact value does not matter.
  * \param[in]       capabilities    HID++ capabilities.
- *                                  Valid values and their meaning are not yet documented.
  * \param[in]       name            Name of your device.
  *                                  This name will appear in the Logitech Unifying desktop software.
  *                                  This value does not need to be NULL terminated.
@@ -137,6 +103,60 @@ enum unifying_error unifying_pair(struct unifying_state* state,
                                   uint16_t capabilities,
                                   const char* name,
                                   uint8_t name_length);
+
+/*!
+ * Queue a payload that sets the timeout for keep-alive packets.
+ * 
+ * This can be useful for conserving power when the user isn't actively using the device.
+ * 
+ * \param[in,out]   state       Unifying state information.
+ * \param[in]       timeout     New packet timeout.
+ * 
+ * \return  \ref UNIFYING_CREATE_ERROR if dynamic memory allocation fails.
+ * \return  \ref UNIFYING_BUFFER_FULL_ERROR if the transmit buffer is full.
+ * \return  \ref UNIFYING_SUCCESS otherwise.
+ */
+enum unifying_error unifying_set_timeout(struct unifying_state* state, uint16_t timeout);
+
+/*!
+ * Immediately transmit an encrypted keystroke payload.
+ * 
+ * \note    Sending 2 or more keyboard scancodes at once requires sending an intermediate payload
+ *          for each additional keyboard scancode.
+ *          Otherwise the Unifying receiver will reject the payload.
+ * \code{.c}
+ * // e.g. Pressing 'a', 'b', and 'c' keys at the same time.
+ * uint8_t keys[UNIFYING_KEYS_LEN] = {0, 0, 0, 0, 0, 0};
+ * keys[5] = 0x04; // scancode for 'a'
+ * // Press 'a'.
+ * unifying_encrypted_keystroke(&state, &keys, 0);
+ * keys[4] = 0x05; // scancode for 'b'
+ * // Press 'a' and 'b'.
+ * unifying_encrypted_keystroke(&state, &keys, 0);
+ * keys[3] = 0x06; // scancode for 'c'
+ * // Press 'a', 'b', and 'c'.
+ * unifying_encrypted_keystroke(&state, &keys, 0);
+ * \endcode
+ * 
+ * \param[in,out]   state       Unifying state information.
+ * \param[in]       keys        Pointer to a buffer of \ref UNIFYING_KEYS_LEN keyboard scancodes
+ * \param[in]       modifiers   Bitfield where each bit corresponds to a specific modifier key.
+ * 
+ * \todo    Define modifiers key bits.
+ * 
+ * \return  \ref UNIFYING_ENCRYPTION_ERROR if payload encryption fails.
+ * \return  \ref UNIFYING_CREATE_ERROR if dynamic memory allocation fails.
+ * \return  \ref UNIFYING_TRANSMIT_ERROR if payload transmission fails.
+ * \return  \ref UNIFYING_BUFFER_FULL_ERROR if the receive buffer is full and a response payload is available.
+ * \return  \ref UNIFYING_CREATE_ERROR if dynamic memory allocation fails.
+ * \return  \ref UNIFYING_PAYLOAD_LENGTH_ERROR if the response payload's length differs from its expected length.
+ *          This should never happen.
+ * \return  \ref UNIFYING_SUCCESS otherwise.
+ */
+enum unifying_error unifying_encrypted_keystroke(struct unifying_state* state,
+                                                 const uint8_t keys[UNIFYING_KEYS_LEN],
+                                                 uint8_t modifiers);
+
 
 #ifdef __cplusplus
 }

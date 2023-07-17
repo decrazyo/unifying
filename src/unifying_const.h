@@ -1,32 +1,117 @@
 
+/*!
+ * \file unifying_const.h
+ * \brief Constants used by the Unifying protocol
+ */
+
 #ifndef UNIFYING_CONST_H
 #define UNIFYING_CONST_H
 
 #include <stdint.h>
 
 #ifndef UNIFYING_TIMEOUT_COEFFICIENT
+/*!
+ * Determines what percent of the timeout should elapse before transmitting a keep-alive packet.
+ */
 #define UNIFYING_TIMEOUT_COEFFICIENT 0.875
 #endif
 
+/*!
+ * Used to indicate that \ref unifying_transmit should not change the current timeout.
+ */
+#define UNIFYING_TIMEOUT_UNCHANGED 0
+
+/*!
+ * Size of an AES-128 block in bytes.
+ */
 #define UNIFYING_AES_BLOCK_LEN 16
+
+/*!
+ * Size of the AES nonce prefix in bytes.
+ * \see unifying_aes_nonce_prefix
+ */
 #define UNIFYING_AES_NONCE_PREFIX_LEN 7
+
+/*!
+ * Size of the AES nonce suffix in bytes.
+ * \see unifying_aes_nonce_suffix
+ */
 #define UNIFYING_AES_NONCE_SUFFIX_LEN 5
+
+/*!
+ * Size of encrypted data in bytes.
+ */
 #define UNIFYING_AES_DATA_LEN 8
 
+/*!
+ * Number of RF channels that the Unifying protocol uses in normal operation.
+ * /see unifying_channels
+ */
+
 #define UNIFYING_CHANNELS_LEN 25
+/*!
+ * Number of RF channels that the Unifying protocol uses for pairing.
+ * /see unifying_pairing_channels
+ */
+
 #define UNIFYING_PAIRING_CHANNELS_LEN 11
+
+/*!
+ * Size of the RF address in bytes.
+ * /see unifying_pairing_address
+ */
 #define UNIFYING_ADDRESS_LEN 5
 
+/*!
+ * Maximum size of a Unifying payload in bytes.
+ */
 #define UNIFYING_MAX_PAYLOAD_LEN 22
+
+/*!
+ * Maximum name length for a Unifying device.
+ * 
+ * This length does not include a NULL terminator.
+ */
 #define UNIFYING_MAX_NAME_LEN 16
+
+/*!
+ * Number keyboard scancodes that can be transmitted in a single encrypted payload.
+ */
 #define UNIFYING_KEYS_LEN 6
 
+/*!
+ * Size of the first pairing request in bytes.
+ */
 #define UNIFYING_PAIR_REQUEST_1_LEN 22
+
+/*!
+ * Size of the first pairing response in bytes.
+ */
+
 #define UNIFYING_PAIR_RESPONSE_1_LEN 22
+/*!
+ * Size of the second pairing request in bytes.
+ */
 #define UNIFYING_PAIR_REQUEST_2_LEN 22
+
+/*!
+ * Size of the second pairing response in bytes.
+ */
 #define UNIFYING_PAIR_RESPONSE_2_LEN 22
+/*!
+ * Size of the third pairing request in bytes.
+ */
 #define UNIFYING_PAIR_REQUEST_3_LEN 22
+
+/*!
+ * Size of the third pairing response in bytes.
+ */
 #define UNIFYING_PAIR_RESPONSE_3_LEN 10
+
+/*!
+ * Size of the pairing complete request in bytes.
+ * No pairing response is expected.
+ */
 #define UNIFYING_PAIR_COMPLETE_REQUEST_LEN 10
 
 #define UNIFYING_WAKE_UP_REQUEST_1_LEN 22
