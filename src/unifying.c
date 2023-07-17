@@ -2,8 +2,8 @@
 #include "unifying.h"
 
 enum unifying_error unifying_response(struct unifying_state* state,
-                                          struct unifying_receive_entry** receive_entry,
-                                          uint8_t length)
+                                      struct unifying_receive_entry** receive_entry,
+                                      uint8_t length)
 {
     *receive_entry = unifying_ring_buffer_pop_front(state->receive_buffer);
 

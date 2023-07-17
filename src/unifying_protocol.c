@@ -203,6 +203,8 @@ enum unifying_error unifying_encrypted_keystroke(struct unifying_state* state,
     unifying_encrypted_keystroke_request_init(&request, aes_buffer, state->aes_counter);
     unifying_encrypted_keystroke_request_pack(transmit_entry->payload, &request);
 
+    // TODO: Don't buffer key and mouse payloads.
+    //       It looks like genuine Unifying devices transmit those immediately
     err = unifying_ring_buffer_push_back(state->transmit_buffer, transmit_entry);
 
     if(err)
