@@ -55,7 +55,7 @@ enum unifying_error unifying_response(struct unifying_state* state,
  * \param[in,out]   state   Unifying state information.
  * 
  */
-enum unifying_error unifying_hidpp_1_0(struct unifying_state* state)
+enum unifying_error unifying_hidpp_1_0(struct unifying_state* state);
 
 /*!
  * Transmit and receive Unifying payloads at regular intervals.
