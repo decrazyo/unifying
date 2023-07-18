@@ -2,6 +2,8 @@
 /*!
  * \file unifying_state.h
  * \brief Structures and functions for managing the Unifying protocol's state.
+ * 
+ * \todo: Add functions for allocating and freeing \ref unifying_state
  */
 
 #ifndef UNIFYING_STATE_H
@@ -114,7 +116,7 @@ struct unifying_state
     const struct unifying_interface* interface;
     /// Buffer for payloads to be transmitted.
     struct unifying_ring_buffer* transmit_buffer;
-    /// Buffer for received payloads to be handled later.
+    /// Buffer for received payloads to be handled.
     struct unifying_ring_buffer* receive_buffer;
     /// RF address.
     uint8_t *address;
@@ -122,7 +124,10 @@ struct unifying_state
     uint8_t *aes_key;
     /// AES counter.
     uint32_t aes_counter;
-    /// Default timeout.
+    /*!
+     * Default timeout.
+     * Transmitting some payloads will set `timeout` to this value.
+     */
     uint16_t default_timeout;
     /// Current timeout for keep-alive packets.
     uint16_t timeout;

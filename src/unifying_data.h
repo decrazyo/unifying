@@ -17,13 +17,18 @@
 #include <stdio.h>
 
 #include "unifying_const.h"
-#include "unifying_buffer.h"
 #include "unifying_utils.h"
 
 // NOTE: Consider replacing some of the uint8_t arrays with pointers.
 
+/*!
+ * Pairing request payload number 1.
+ * 
+ * This is the initial paring request that is sent to a Unifying receiver.
+ */
 struct unifying_pair_request_1
 {
+    /// 
     uint8_t id;
     uint8_t frame;
     uint8_t step;
@@ -38,6 +43,11 @@ struct unifying_pair_request_1
     uint8_t checksum;
 };
 
+/*!
+ * Pairing response payload number 1.
+ * 
+ * This is the expected response to \ref unifying_pair_request_1.
+ */
 struct unifying_pair_response_1
 {
     uint8_t id;

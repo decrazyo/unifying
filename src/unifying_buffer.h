@@ -22,10 +22,15 @@
  */
 struct unifying_ring_buffer
 {
+    /// Pointer to a fixed size array of data pointers.
     void** buffer;
+    /// Number of pointers that `buffer` can hold.
     uint8_t size;
+    /// Number of items stored in `buffer`.
     uint8_t count;
+    /// Index of the first item in the buffer.
     uint8_t front;
+    /// Index of the last item in the buffer.
     uint8_t back;
 };
 
