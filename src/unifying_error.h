@@ -2,6 +2,9 @@
 /*!
  * \file unifying_error.h
  * \brief Collection of error values, names, and messages.
+ * 
+ * \todo Add a preprocessor option to omit error names and messages to save space.
+ * \todo make error names and messages static.
  */
 
 #ifndef UNIFYING_ERROR_H

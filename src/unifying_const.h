@@ -155,12 +155,47 @@
 #define UNIFYING_MULTIMEDIA_KEYSTROKE_REQUEST_LEN 10
 #define UNIFYING_MOUSE_MOVE_REQUEST_LEN 10
 
+/*!
+ * Bitmask for de-obfuscate an AES key.
+ * 
+ * \see unifying_deobfuscate_aes_key()
+ */
 extern const uint8_t unifying_aes_key_bitmask[UNIFYING_AES_BLOCK_LEN];
+
+/*!
+ * AES key byte indices for de-obfuscate an AES key.
+ * 
+ * The On-Line Encyclopedia of Integer Sequences returns no matches for this sequence nor any similar sequence.
+ * It appears to be random.
+ * 
+ * \see unifying_deobfuscate_aes_key()
+ */
 extern const uint8_t unifying_aes_key_index[UNIFYING_AES_BLOCK_LEN];
+
+/*!
+ * AES nonce that prefixes the AES counter in the AES initialization vector (IV).
+ */
 extern const uint8_t unifying_aes_nonce_prefix[UNIFYING_AES_NONCE_PREFIX_LEN];
+
+/*!
+ * AES nonce that suffixes the AES counter in the AES initialization vector (IV).
+ */
 extern const uint8_t unifying_aes_nonce_suffix[UNIFYING_AES_NONCE_SUFFIX_LEN];
+
+/*!
+ * All RF channels that a Unifying receiver listens on during normal operation.
+ */
 extern const uint8_t unifying_channels[UNIFYING_CHANNELS_LEN];
+
+/*!
+ * All RF channels that a Unifying receiver listens on during pairing.
+ * 
+ */
 extern const uint8_t unifying_pairing_channels[UNIFYING_PAIRING_CHANNELS_LEN];
+
+/*!
+ * Initial RF address for pairing.
+ */
 extern const uint8_t unifying_pairing_address[UNIFYING_ADDRESS_LEN];
 
 #endif

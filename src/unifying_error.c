@@ -1,9 +1,6 @@
 
 #include "unifying_error.h"
 
-// TODO: Add a preprocessor option to omit error names and messages.
-// TODO: make error names and messages static.
-
 const char* unifying_error_name[UNIFYING_ERROR_COUNT] = {
     "SUCCESS",
     "ERROR",

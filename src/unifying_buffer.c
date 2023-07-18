@@ -16,7 +16,6 @@ enum unifying_error unifying_ring_buffer_init(struct unifying_ring_buffer* ring_
     return UNIFYING_SUCCESS;
 }
 
-
 struct unifying_ring_buffer* unifying_ring_buffer_create(uint8_t size)
 {
     if(!size)
@@ -25,7 +24,20 @@ struct unifying_ring_buffer* unifying_ring_buffer_create(uint8_t size)
     }
 
     struct unifying_ring_buffer* ring_buffer = malloc(sizeof(struct unifying_ring_buffer));
+
+    if(!ring_buffer)
+    {
+        return NULL;
+    }
+
     void** buffer = malloc(size * sizeof(void*));
+
+    if(!buffer)
+    {
+        free(ring_buffer);
+        return NULL;
+    }
+
     unifying_ring_buffer_init(ring_buffer, buffer, size);
     return ring_buffer;
 }
@@ -51,7 +63,6 @@ enum unifying_error unifying_ring_buffer_push_front(struct unifying_ring_buffer*
     {
         ring_buffer->front = ring_buffer->size - 1;
     }
-
 
     ring_buffer->buffer[ring_buffer->front] = entry;
     ring_buffer->count += 1;

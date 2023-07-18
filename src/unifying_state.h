@@ -30,7 +30,7 @@ struct unifying_interface
      * \param[in]   payload     Payload data to transmit.
      * \param[in]   length      Length of the payload data.
      * 
-     * \return  0 if successful.
+     * \return  `0` if successful.
      * \return  Anything else on failure.
      */
     uint8_t (*transmit_payload)(const uint8_t* payload, uint8_t length);
@@ -41,14 +41,14 @@ struct unifying_interface
      * \param[in]   length      Length of the payload buffer.
      * 
      * \return  The length of the received payload.
-     * \return  0 if no payload is available.
+     * \return  `0` if no payload is available.
      */
     uint8_t (*receive_payload)(uint8_t* payload, uint8_t length);
     /*!
      * Indicate if an RF payload is available to be received.
      * 
-     * \return  true if an RF payload is available.
-     * \return  false if no RF payload is available.
+     * \return  `true` if an RF payload is available.
+     * \return  `false` if no RF payload is available.
      */
     bool (*payload_available)();
     /*!
@@ -62,7 +62,7 @@ struct unifying_interface
      * 
      * \param[in]   address     Address to set the radio to.
      * 
-     * \return  0 if successful.
+     * \return  `0` if successful.
      * \return  Anything else on failure.
      */
     uint8_t (*set_address)(const uint8_t address[UNIFYING_ADDRESS_LEN]);
@@ -71,7 +71,7 @@ struct unifying_interface
      * 
      * \param[in]   channel     Channel to set the radio to.
      * 
-     * \return  0 if successful.
+     * \return  `0` if successful.
      * \return  Anything else on failure.
      */
     uint8_t (*set_channel)(uint8_t channel);
@@ -97,7 +97,7 @@ struct unifying_interface
      * \param[in]       key     AES-128 encryption key.
      * \param[in]       iv      AES-128 initialization vector.
      * 
-     * \return  0 if successful.
+     * \return  `0` if successful.
      * \return  Anything else on failure.
      */
     uint8_t (*encrypt)(uint8_t data[UNIFYING_AES_DATA_LEN],

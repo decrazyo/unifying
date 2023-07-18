@@ -45,7 +45,7 @@ enum unifying_error unifying_tick(struct unifying_state* state);
 /*!
  * Repeatedly call unifying_tick() until a condition is met.
  * 
- * \note    If all \p exit_on_* parameters are false then this function will never return.
+ * \note    If all \p exit_on_* parameters are `false` then this function will never return.
  * 
  * \param[in,out]   state               Unifying state information.
  * \param[in]       exit_on_error       Return if unifying_tick() returns an error.
@@ -54,7 +54,7 @@ enum unifying_error unifying_tick(struct unifying_state* state);
  * \param[in]       exit_on_receive     Return if \ref unifying_state.receive_buffer "state.receive_buffer"
  *                                      is not empty, implying that a payload has been received.
  * 
- * \return  Any error returned by unifying_tick if \p exit_on_error is true.
+ * \return  Any error returned by unifying_tick() if \p exit_on_error is `true`.
  * \return  \ref UNIFYING_SUCCESS otherwise.
  */
 enum unifying_error unifying_loop(struct unifying_state* state,
