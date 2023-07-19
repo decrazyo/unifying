@@ -1,7 +1,7 @@
 
 # Logitech Unifying Protocol Implementation
 
-![Arduino nano and nRF24L01+ on breadboard](https://github.com/decrazyo/unifying/blob/main/doc/breadboard.jpg)
+![Arduino nano and nRF24L01+ on breadboard](https://raw.githubusercontent.com/decrazyo/unifying/main/doc/breadboard.jpg)
 
 This project is an attempt to re-implement the proprietary Logitech Unifying protocol as a free and open C library.
 The library is intended to be Arduino compatible while remaining compiler and hardware agnostic.
@@ -16,7 +16,6 @@ https://github.com/nRF24/RF24
 - [ ] Add multimedia payloads
 - [ ] Add wake up payloads
 - [ ] Add proper HID++ response payloads
-- [ ] Add documentation
 - [ ] Add more examples
 - [ ] General code cleanup
 
@@ -25,6 +24,7 @@ https://github.com/nRF24/RF24
 - [x] Pairing with a receiver
 - [x] HID++ error response payloads
 - [x] Encrypted keystroke payloads
+- [x] Add documentation
 
 ## See also
 [Hacking Logitech Unifying DC612 talk](https://www.youtube.com/watch?v=10lE96BBOF8)  

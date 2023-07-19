@@ -20,7 +20,6 @@
 extern "C" {
 #endif
 
-
 /*!
  * Transmit and receive Unifying payloads at regular intervals.
  * 
@@ -40,7 +39,6 @@ extern "C" {
  * 
  */
 enum unifying_error unifying_tick(struct unifying_state* state);
-
 
 /*!
  * Repeatedly call unifying_tick() until a condition is met.
@@ -139,7 +137,7 @@ enum unifying_error unifying_set_timeout(struct unifying_state* state, uint16_t 
  * \endcode
  * 
  * \param[in,out]   state       Unifying state information.
- * \param[in]       keys        Pointer to a buffer of \ref UNIFYING_KEYS_LEN keyboard scancodes
+ * \param[in]       keys        Pointer to a buffer of \ref UNIFYING_KEYS_LEN keyboard scancodes.
  * \param[in]       modifiers   Bitfield where each bit corresponds to a specific modifier key.
  * 
  * \todo    Define modifiers key bits.
@@ -156,7 +154,6 @@ enum unifying_error unifying_set_timeout(struct unifying_state* state, uint16_t 
 enum unifying_error unifying_encrypted_keystroke(struct unifying_state* state,
                                                  const uint8_t keys[UNIFYING_KEYS_LEN],
                                                  uint8_t modifiers);
-
 
 #ifdef __cplusplus
 }

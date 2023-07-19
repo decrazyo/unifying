@@ -68,6 +68,65 @@ uint8_t unifying_xnor(uint8_t first, uint8_t second)
     return ~(first ^ second);
 }
 
+void unifying_encrypted_keystroke_plaintext_init(struct unifying_encrypted_keystroke_plaintext* unpacked,
+                                                 uint8_t modifiers,
+                                                 const uint8_t keys[UNIFYING_KEYS_LEN])
+{
+    memset(unpacked, 0, sizeof(struct unifying_encrypted_keystroke_plaintext));
+    unpacked->modifiers = modifiers;
+    memcpy(unpacked->keys, keys, sizeof(unpacked->keys));
+    unpacked->flag = 0xC9;
+}
+
+void unifying_encrypted_keystroke_plaintext_pack(uint8_t packed[UNIFYING_AES_DATA_LEN],
+                                                 const struct unifying_encrypted_keystroke_plaintext* unpacked)
+{
+    packed[0] = unpacked->modifiers;
+    memcpy(&packed[1], unpacked->keys, sizeof(unpacked->keys));
+    packed[7] = unpacked->flag;
+}
+
+void unifying_encrypted_keystroke_iv_init(struct unifying_encrypted_keystroke_iv* unpacked,
+                                          uint32_t counter)
+{
+    memset(unpacked, 0, sizeof(struct unifying_encrypted_keystroke_iv));
+    memcpy(unpacked->prefix, unifying_aes_nonce_prefix, sizeof(unpacked->prefix));
+    unpacked->counter = counter;
+    memcpy(unpacked->suffix, unifying_aes_nonce_suffix, sizeof(unpacked->suffix));
+}
+
+void unifying_encrypted_keystroke_iv_pack(uint8_t packed[UNIFYING_AES_BLOCK_LEN],
+                                          const struct unifying_encrypted_keystroke_iv* unpacked)
+{
+    memcpy(&packed[0], unpacked->prefix, sizeof(unpacked->prefix));
+    unifying_uint32_pack(&packed[7], unpacked->counter);
+    memcpy(&packed[11], unpacked->suffix, sizeof(unpacked->suffix));
+}
+
+void unifying_proto_aes_key_init(struct unifying_proto_aes_key* unpacked,
+                                     uint8_t base_address[UNIFYING_ADDRESS_LEN - 1],
+                                     uint16_t device_product_id,
+                                     uint16_t receiver_product_id,
+                                     uint32_t device_crypto,
+                                     uint32_t receiver_crypto)
+{
+    memcpy(unpacked->base_address, base_address, sizeof(unpacked->base_address));
+    unpacked->device_product_id = device_product_id;
+    unpacked->receiver_product_id = receiver_product_id;
+    unpacked->device_crypto = device_crypto;
+    unpacked->receiver_crypto = receiver_crypto;
+}
+
+void unifying_proto_aes_key_pack(uint8_t packed[UNIFYING_AES_BLOCK_LEN],
+                                 const struct unifying_proto_aes_key* unpacked)
+{
+    memcpy(&packed[0], unpacked->base_address, sizeof(unpacked->base_address));
+    unifying_uint16_pack(&packed[4], unpacked->device_product_id);
+    unifying_uint16_pack(&packed[6], unpacked->receiver_product_id);
+    unifying_uint32_pack(&packed[8], unpacked->device_crypto);
+    unifying_uint32_pack(&packed[12], unpacked->receiver_crypto);
+}
+
 void unifying_deobfuscate_aes_key(uint8_t aes_key[UNIFYING_AES_BLOCK_LEN],
                                   const uint8_t proto_aes_key[UNIFYING_AES_BLOCK_LEN])
 {

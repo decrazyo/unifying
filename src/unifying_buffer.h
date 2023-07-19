@@ -39,7 +39,7 @@ extern "C" {
 #endif
 
 /*!
- * Initialize a ring buffer instance.
+ * Initialize a \ref unifying_ring_buffer "ring buffer" instance.
  * 
  * \param[out]  ring_buffer     Pointer to a ring buffer to initialize.
  * \param[in]   buffer          Pointer to pointer buffer.
@@ -51,7 +51,7 @@ extern "C" {
 enum unifying_error unifying_ring_buffer_init(struct unifying_ring_buffer* ring_buffer, void** buffer, uint8_t size);
 
 /*!
- * Allocate and initialize a ring buffer instance.
+ * Allocate and initialize a \ref unifying_ring_buffer "ring buffer" instance.
  * 
  * Ring buffers created with this function should be freed with
  * unifying_ring_buffer_destroy() when they are no longer needed.

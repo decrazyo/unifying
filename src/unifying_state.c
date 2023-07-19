@@ -1,18 +1,42 @@
 
 #include "unifying_state.h"
 
-void unifying_interface_init(struct unifying_interface* interface,
-                             uint8_t (*transmit_payload)(const uint8_t* payload, uint8_t length),
-                             uint8_t (*receive_payload)(uint8_t* payload, uint8_t length),
-                             bool (*payload_available)(),
-                             uint8_t (*payload_size)(),
-                             uint8_t (*set_address)(const uint8_t address[UNIFYING_ADDRESS_LEN]),
-                             uint8_t (*set_channel)(uint8_t channel),
-                             uint32_t (*time)(),
-                             uint8_t (*encrypt)(uint8_t data[UNIFYING_AES_DATA_LEN],
-                                                const uint8_t key[UNIFYING_AES_BLOCK_LEN],
-                                                const uint8_t iv[UNIFYING_AES_BLOCK_LEN]))
+#if defined(UNIFYING_HARDWARE_AES) && (UNIFYING_HARDWARE_AES == 0)
+static uint8_t unifying_encrypt(uint8_t data[UNIFYING_AES_DATA_LEN],
+                                const uint8_t key[UNIFYING_AES_BLOCK_LEN],
+                                const uint8_t iv[UNIFYING_AES_BLOCK_LEN]) {
+  struct AES_ctx ctx;
+  AES_init_ctx_iv(&ctx, key, iv);
+  AES_CTR_xcrypt_buffer(&ctx, data, UNIFYING_AES_DATA_LEN);
+  return 0;
+}
+#endif
+
+enum unifying_error unifying_interface_init(struct unifying_interface* interface,
+                                            uint8_t (*transmit_payload)(const uint8_t* payload, uint8_t length),
+                                            uint8_t (*receive_payload)(uint8_t* payload, uint8_t length),
+                                            bool (*payload_available)(),
+                                            uint8_t (*payload_size)(),
+                                            uint8_t (*set_address)(const uint8_t address[UNIFYING_ADDRESS_LEN]),
+                                            uint8_t (*set_channel)(uint8_t channel),
+                                            uint32_t (*time)(),
+                                            uint8_t (*encrypt)(uint8_t data[UNIFYING_AES_DATA_LEN],
+                                                               const uint8_t key[UNIFYING_AES_BLOCK_LEN],
+                                                               const uint8_t iv[UNIFYING_AES_BLOCK_LEN]))
 {
+    if(!encrypt)
+    {
+#if defined(UNIFYING_HARDWARE_AES) && (UNIFYING_HARDWARE_AES == 0)
+        interface->encrypt = unifying_encrypt;
+#else
+        return UNIFYING_ERROR;
+#endif
+    }
+    else
+    {
+        interface->encrypt = encrypt;
+    }
+
     interface->transmit_payload = transmit_payload;
     interface->receive_payload = receive_payload;
     interface->payload_available = payload_available;
@@ -20,7 +44,8 @@ void unifying_interface_init(struct unifying_interface* interface,
     interface->set_address = set_address;
     interface->set_channel = set_channel;
     interface->time = time;
-    interface->encrypt = encrypt;
+
+    return UNIFYING_SUCCESS;
 }
 
 
@@ -70,16 +95,30 @@ void unifying_state_buffers_clear(struct unifying_state* state)
     unifying_state_receive_buffer_clear(state);
 }
 
-void unifying_state_channel_set(struct unifying_state* state, uint8_t channel)
+uint8_t unifying_state_channel_set(struct unifying_state* state, uint8_t channel)
 {
-    state->channel = channel;
-    state->interface->set_channel(state->channel);
+    uint8_t status = state->interface->set_channel(state->channel);
+
+    if(!status)
+    {
+        // Success
+        state->channel = channel;
+    }
+
+    return status;
 }
 
-void unifying_state_address_set(struct unifying_state* state, const uint8_t address[UNIFYING_ADDRESS_LEN])
+uint8_t unifying_state_address_set(struct unifying_state* state, const uint8_t address[UNIFYING_ADDRESS_LEN])
 {
-    memcpy(state->address, address, UNIFYING_ADDRESS_LEN);
-    state->interface->set_address(state->address);
+    uint8_t status = state->interface->set_address(state->address);
+
+    if(!status)
+    {
+        // Success
+        memcpy(state->address, address, UNIFYING_ADDRESS_LEN);
+    }
+
+    return status;
 }
 
 void unifying_transmit_entry_init(struct unifying_transmit_entry* entry,

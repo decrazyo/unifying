@@ -3,7 +3,9 @@
  * \file unifying_state.h
  * \brief Structures and functions for managing the Unifying protocol's state.
  * 
- * \todo: Add functions for allocating and freeing \ref unifying_state
+ * \todo Add functions for allocating and freeing \ref unifying_state
+ * 
+ * \todo Add a function for setting timeout state.
  */
 
 #ifndef UNIFYING_STATE_H
@@ -15,7 +17,23 @@
 #include <string.h>
 
 #include "unifying_const.h"
+#include "unifying_error.h"
 #include "unifying_buffer.h"
+
+/*!
+ * Compile and use a software implementation of AES encryption by default.
+ * 
+ * Defining this as anything other than `0` will disable the default implementation.
+ * If the default implementation is disable then this library's user is expected to provide their own implementation.
+ */
+#ifndef UNIFYING_HARDWARE_AES
+#define UNIFYING_HARDWARE_AES 0
+#endif
+
+#if defined(UNIFYING_HARDWARE_AES) && (UNIFYING_HARDWARE_AES == 0)
+// https://github.com/kokke/tiny-AES-c
+#include "aes.h"
+#endif
 
 /*!
  * Functions for interfacing with hardware.
@@ -144,8 +162,11 @@ struct unifying_state
  */
 struct unifying_transmit_entry
 {
+    /// Array of bytes to transmit.
     uint8_t* payload;
+    /// Size of `payload` in bytes.
     uint8_t length;
+    /// New timeout value to set if `payload` is successfully transmitted.
     uint8_t timeout;
 };
 
@@ -154,7 +175,9 @@ struct unifying_transmit_entry
  */
 struct unifying_receive_entry
 {
+    /// Array of received bytes.
     uint8_t* payload;
+    /// Size of `payload` in bytes.
     uint8_t length;
 };
 
@@ -162,19 +185,71 @@ struct unifying_receive_entry
 extern "C" {
 #endif
 
+/*!
+ * Initialize a \ref unifying_interface structure.
+ * 
+ * \param[out]  interface           A \ref unifying_interface to initialize.
+ * \param[in]   transmit_payload    Function for transmitting RF payloads.
+ *                                  see \ref unifying_interface.transmit_payload for more details.
+ * \param[in]   receive_payload     Function for receiving RF payloads.
+ *                                  see \ref unifying_interface.receive_payload for more details.
+ * \param[in]   payload_available   Function for determining if an RF payload is available to be read.
+ *                                  see \ref unifying_interface.payload_available for more details.
+ * \param[in]   payload_size        Function for determining the size of an available RF payload.
+ *                                  see \ref unifying_interface.payload_size for more details.
+ * \param[in]   set_address         Function for setting the RF address of a radio.
+ *                                  see \ref unifying_interface.set_address for more details.
+ * \param[in]   set_channel         Function for setting the RF channel of a radio.
+ *                                  see \ref unifying_interface.set_channel for more details.
+ * \param[in]   time                Function getting the time since execution started in milliseconds.
+ *                                  see \ref unifying_interface.time for more details.
+ * \param[in]   encrypt             Function for AES-128 encrypting data.
+ *                                  If \ref UNIFYING_HARDWARE_AES is `0` (default) then 
+ *                                  a default implementation is provided for this function.
+ *                                  Specify `NULL` to use the default implementation.
+ *                                  see \ref unifying_interface.encrypt for more details.
+ * 
+ * \return  \ref UNIFYING_ERROR if \p encrypt is `NULL` and no default implementation is available.
+ * \return  \ref UNIFYING_SUCCESS otherwise.
+ * 
+ * \see unifying_interface
+ */
+enum unifying_error unifying_interface_init(struct unifying_interface* interface,
+                                            uint8_t (*transmit_payload)(const uint8_t* payload, uint8_t length),
+                                            uint8_t (*receive_payload)(uint8_t* payload, uint8_t length),
+                                            bool (*payload_available)(),
+                                            uint8_t (*payload_size)(),
+                                            uint8_t (*set_address)(const uint8_t address[UNIFYING_ADDRESS_LEN]),
+                                            uint8_t (*set_channel)(uint8_t channel),
+                                            uint32_t (*time)(),
+                                            uint8_t (*encrypt)(uint8_t data[UNIFYING_AES_DATA_LEN],
+                                                               const uint8_t key[UNIFYING_AES_BLOCK_LEN],
+                                                               const uint8_t iv[UNIFYING_AES_BLOCK_LEN]));
 
-void unifying_interface_init(struct unifying_interface* interface,
-                             uint8_t (*transmit_payload)(const uint8_t* payload, uint8_t length),
-                             uint8_t (*receive_payload)(uint8_t* payload, uint8_t length),
-                             bool (*payload_available)(),
-                             uint8_t (*payload_size)(),
-                             uint8_t (*set_address)(const uint8_t address[UNIFYING_ADDRESS_LEN]),
-                             uint8_t (*set_channel)(uint8_t channel),
-                             uint32_t (*time)(),
-                             uint8_t (*encrypt)(uint8_t data[UNIFYING_AES_DATA_LEN],
-                                                const uint8_t key[UNIFYING_AES_BLOCK_LEN],
-                                                const uint8_t iv[UNIFYING_AES_BLOCK_LEN]));
-
+/*!
+ * Initialize a \ref unifying_state structure.
+ * 
+ * \param[out]  state               Pointer to a \ref unifying_state to initialize.
+ * \param[in]   interface           Pointer to an initialized \ref unifying_interface
+ *                                  for accessing hardware features.
+ * \param[in]   transmit_buffer     Pointer to an initialized \ref unifying_ring_buffer 
+ *                                  for buffering payloads for transmission.
+ * \param[in]   receive_buffer      Pointer to an initialized \ref unifying_ring_buffer 
+ *                                  for buffering received payloads.
+ * \param[in]   address             Byte array with space for at least \ref UNIFYING_ADDRESS_LEN bytes
+ *                                  to store an RF address.
+ * \param[in]   aes_key             Byte array with space for at least \ref UNIFYING_AES_BLOCK_LEN bytes
+ *                                  to store an AES encryption key.
+ * \param[in]   aes_counter         A random 32-bit integer for AES encryption.
+ * \param[in]   default_timeout     Default timeout used by some payloads.
+ * \param[in]   channel             RF channel to communicate on.
+ *                                  This should be a value from \ref unifying_channels.
+ * 
+ * \todo    Define valid values for `default_timeout`.
+ * 
+ * \see unifying_state
+ * \see unifying_channels
+ */
 void unifying_state_init(struct unifying_state* state,
                          const struct unifying_interface* interface,
                          struct unifying_ring_buffer* transmit_buffer,
@@ -185,25 +260,127 @@ void unifying_state_init(struct unifying_state* state,
                          uint16_t default_timeout,
                          uint8_t channel);
 
+/*!
+ * Remove and free all items in \ref unifying_state.transmit_buffer "state.transmit_buffer".
+ * 
+ * \param[in,out]   state   Unifying state information.
+ */
 void unifying_state_transmit_buffer_clear(struct unifying_state* state);
+
+/*!
+ * Remove and free all items in \ref unifying_state.receive_buffer "state.receive_buffer".
+ * 
+ * \param[in,out]   state   Unifying state information.
+ */
 void unifying_state_receive_buffer_clear(struct unifying_state* state);
+
+/*!
+ * Remove and free all items in \ref unifying_state.transmit_buffer "state.transmit_buffer" 
+ * and \ref unifying_state.receive_buffer "state.receive_buffer".
+ * 
+ * \param[in,out]   state   Unifying state information.
+ */
 void unifying_state_buffers_clear(struct unifying_state* state);
 
-void unifying_state_channel_set(struct unifying_state* state, uint8_t channel);
+/*!
+ * Set the RF channel.
+ * 
+ * Calls \ref unifying_interface.set_channel() "state.interface.set_channel()" to change the RF channel.
+ * If that's successful then \ref unifying_state.timeout "state.timeout" will be updated as well.
+ * 
+ * \param[in,out]   state       Unifying state information.
+ * \param[in]       channel     New RF channel to use.
+ * 
+ * \return  The return value of \ref unifying_interface.set_channel() "state.interface.set_channel()".
+ */
+uint8_t unifying_state_channel_set(struct unifying_state* state, uint8_t channel);
 
-void unifying_state_address_set(struct unifying_state* state, const uint8_t address[UNIFYING_ADDRESS_LEN]);
+/*!
+ * Set the RF address.
+ * 
+ * Calls \ref unifying_interface.set_address() "state.interface.set_address()" to change the RF address.
+ * If that's successful then \ref unifying_state.timeout "state.timeout" will be updated as well.
+ * 
+ * \param[in,out]   state       Unifying state information.
+ * \param[in]       address     New RF address to use.
+ * 
+ * \return  The return value of \ref unifying_interface.set_address() "state.interface.set_address()".
+ */
+uint8_t unifying_state_address_set(struct unifying_state* state, const uint8_t address[UNIFYING_ADDRESS_LEN]);
 
+/*!
+ * Initialize a \ref unifying_transmit_entry structure.
+ * 
+ * \param[out]  entry       Pointer to a \ref unifying_transmit_entry to initialize.
+ * \param[in]   payload     Byte array of size `length`.
+ * \param[in]   length      Size of `payload` in bytes.
+ * \param[in]   timeout     A new timeout associated with `payload`.
+ * 
+ * \see unifying_transmit_entry
+ */
 void unifying_transmit_entry_init(struct unifying_transmit_entry* entry,
                                   uint8_t* payload,
                                   uint8_t length,
                                   uint8_t timeout);
+
+/*!
+ * Create and initialize a \ref unifying_transmit_entry structure.
+ * 
+ * \param[in]   length      Size in bytes of a buffer to allocate.
+ * \param[in]   timeout     A new timeout to be associated with a payload.
+ * 
+ * \return  `NULL` if allocation fails.
+ * \return  Pointer to new \ref unifying_transmit_entry instance otherwise.
+ * 
+ * \see unifying_transmit_entry
+ * \see unifying_transmit_entry_destroy()
+ */
 struct unifying_transmit_entry* unifying_transmit_entry_create(uint8_t length, uint8_t timeout);
+
+/*!
+ * Free a \ref unifying_transmit_entry instance.
+ * 
+ * \param[in,out]   entry   Pointer to a \ref unifying_transmit_entry to free.
+ * 
+ * \see unifying_transmit_entry
+ * \see unifying_transmit_entry_create()
+ */
 void unifying_transmit_entry_destroy(struct unifying_transmit_entry* entry);
 
+/*!
+ * Initialize a \ref unifying_receive_entry structure.
+ * 
+ * \param[out]  entry       Pointer to a \ref unifying_receive_entry to initialize.
+ * \param[in]   payload     Byte array of size `length`.
+ * \param[in]   length      Size of `payload` in bytes.
+ * 
+ * \see unifying_receive_entry
+ */
 void unifying_receive_entry_init(struct unifying_receive_entry* entry,
                                          uint8_t* payload,
                                          uint8_t length);
+
+/*!
+ * Create and initialize a \ref unifying_receive_entry structure.
+ * 
+ * \param[in]   length      Size in bytes of a buffer to allocate.
+ * 
+ * \return  `NULL` if allocation fails.
+ * \return  Pointer to new \ref unifying_receive_entry instance otherwise.
+ * 
+ * \see unifying_receive_entry
+ * \see unifying_receive_entry_destroy()
+ */
 struct unifying_receive_entry* unifying_receive_entry_create(uint8_t length);
+
+/*!
+ * Free a \ref unifying_receive_entry instance.
+ * 
+ * \param[in,out]   entry   Pointer to a \ref unifying_receive_entry to free.
+ * 
+ * \see unifying_receive_entry
+ * \see unifying_receive_entry_create()
+ */
 void unifying_receive_entry_destroy(struct unifying_receive_entry* entry);
 
 

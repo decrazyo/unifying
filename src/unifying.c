@@ -153,6 +153,9 @@ static enum unifying_error unifying_response(struct unifying_state* state,
  * \todo    Refactor this code to be more readable
  * 
  * \todo    Implement proper HID++ responses instead of responding to everything with errors.
+ *          - https://drive.google.com/drive/folders/0BxbRzx7vEV7eWmgwazJ3NUFfQ28?resourcekey=0-dQ-Lx1FORQl0KAdOHQaE1A
+ *          - https://docs.google.com/document/d/0BxbRzx7vEV7eNDBheWY0UHM5dEU/edit?resourcekey=0-SPDGsNiO52FX6E-mJIXYXQ#!
+ *          - https://drive.google.com/file/d/0BxbRzx7vEV7eU3VfMnRuRXktZ3M/view?resourcekey=0-06JzoS5yy_4Asod95f4Ecw
  * 
  * \param[in,out]   state   Unifying state information.
  * 
@@ -342,13 +345,6 @@ static enum unifying_error unifying_pair_step_3(struct unifying_state* state,
  * Queue a payload to complete the pairing process.
  * 
  * \param[in,out]   state           Unifying state information.
- * \param[in]       name            Name of your device.
- *                                  This name will appear in the Logitech Unifying desktop software.
- *                                  This value does not need to be NULL terminated.
- *                                  The name cannot be longer than \ref UNIFYING_MAX_NAME_LEN.
- * \param[in]       name_length     Length of the supplied name.
- *                                  The name length does not include a NULL terminator.
- *                                  The name cannot be longer than \ref UNIFYING_MAX_NAME_LEN.
  * 
  * \return  \ref UNIFYING_CREATE_ERROR if dynamic memory allocation fails.
  * \return  \ref UNIFYING_BUFFER_FULL_ERROR if the transmit buffer is full.
