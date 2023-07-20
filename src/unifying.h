@@ -2,6 +2,8 @@
 /*!
  * \file unifying.h
  * \brief High level functions for transmitting and receiving Unifying payloads.
+ * 
+ * \todo    create an initialization function for this library to set the RF channel and address.
  */
 
 #ifndef UNIFYING_H
@@ -103,6 +105,16 @@ enum unifying_error unifying_pair(struct unifying_state* state,
                                   uint8_t name_length);
 
 /*!
+ * Connect to a paired Unifying receiver.
+ * 
+ * \todo    Define possible return values.
+ * 
+ * \param[in,out]   state   Unifying state information.
+ * 
+ */
+enum unifying_error unifying_connect(struct unifying_state* state);
+
+/*!
  * Queue a payload that sets the timeout for keep-alive packets.
  * 
  * This can be useful for conserving power when the user isn't actively using the device.
@@ -154,6 +166,35 @@ enum unifying_error unifying_set_timeout(struct unifying_state* state, uint16_t 
 enum unifying_error unifying_encrypted_keystroke(struct unifying_state* state,
                                                  const uint8_t keys[UNIFYING_KEYS_LEN],
                                                  uint8_t modifiers);
+
+/*!
+ * Immediately transmit a multimedia keystroke payload.
+ * 
+ * \param[in,out]   state       Unifying state information.
+ * \param[in]       keys        Pointer to a buffer of \ref UNIFYING_KEYS_LEN keyboard scancodes.
+ * 
+ */
+enum unifying_error unifying_multimeia_keystroke(struct unifying_state* state,
+                                                 uint8_t keys[UNIFYING_MULTIMEDIA_KEYS_LEN]);
+
+/*!
+ * Queue a mouse payload for transmission.
+ * 
+ * \param[in,out]   state       Unifying state information.
+ * \param[in]       buttons     Bitfield where each bit corresponds to a mouse button.
+ * \param[in]       move_y      Y axis mouse movement.
+ * \param[in]       move_x      X axis mouse movement.
+ * \param[in]       wheel_y     Y axis scroll wheel movement.
+ * \param[in]       wheel_x     X axis scroll wheel movement.
+ * 
+ */
+enum unifying_error unifying_mouse(struct unifying_state* state,
+                                   uint8_t buttons,
+                                   int16_t move_y,
+                                   int16_t move_x,
+                                   int8_t wheel_y,
+                                   int8_t wheel_x);
+
 
 #ifdef __cplusplus
 }

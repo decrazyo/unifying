@@ -97,7 +97,7 @@ void unifying_state_buffers_clear(struct unifying_state* state)
 
 uint8_t unifying_state_channel_set(struct unifying_state* state, uint8_t channel)
 {
-    uint8_t status = state->interface->set_channel(state->channel);
+    uint8_t status = state->interface->set_channel(channel);
 
     if(!status)
     {
@@ -110,7 +110,7 @@ uint8_t unifying_state_channel_set(struct unifying_state* state, uint8_t channel
 
 uint8_t unifying_state_address_set(struct unifying_state* state, const uint8_t address[UNIFYING_ADDRESS_LEN])
 {
-    uint8_t status = state->interface->set_address(state->address);
+    uint8_t status = state->interface->set_address(address);
 
     if(!status)
     {

@@ -9,6 +9,8 @@
  * That performance loss is deemed acceptable for the time being.
  * 
  * \todo    Document struct fields.
+ * 
+ * \todo    move checksum calculation from *_init functions to *_pack functions.
  */
 
 #ifndef UNIFYING_DATA_H
@@ -289,6 +291,18 @@ struct unifying_encrypted_keystroke_request
 };
 
 /*!
+ * Multimedia keystroke request payload.
+ */
+struct unifying_multimeia_keystroke_request
+{
+    uint8_t unknown_0;
+    uint8_t frame;
+    uint8_t keys[UNIFYING_MULTIMEDIA_KEYS_LEN];
+    uint8_t unknown_6_8[3];
+    uint8_t checksum;
+};
+
+/*!
  * Mouse request payload.
  * 
  * Used to transmit mouse movement, clicking, and scrolling to a Unifying receiver.
@@ -299,10 +313,10 @@ struct unifying_mouse_request
     uint8_t frame;
     uint8_t buttons;
     uint8_t unknown_3;
-    int16_t move_x;
     int16_t move_y;
-    int8_t wheel_x;
+    int16_t move_x;
     int8_t wheel_y;
+    int8_t wheel_x;
     uint8_t checksum;
 };
 
@@ -596,17 +610,36 @@ void unifying_encrypted_keystroke_request_init(struct unifying_encrypted_keystro
 void unifying_encrypted_keystroke_request_pack(uint8_t packed[UNIFYING_ENCRYPTED_KEYSTROKE_REQUEST_LEN],
                                                const struct unifying_encrypted_keystroke_request* unpacked);
 
-// TODO: Declare other keystroke types here.
+/*!
+ * Initialize a \ref unifying_multimeia_keystroke_request structure.
+ * 
+ * \param[out]  unpacked    Pointer to a \ref unifying_multimeia_keystroke_request to initialize.
+ * \param[in]   keys        Array of at least \ref UNIFYING_AES_DATA_LEN bytes of multimedia keystroke data.
+ * 
+ * \see unifying_multimeia_keystroke_request
+ */
+void unifying_multimeia_keystroke_request_init(struct unifying_multimeia_keystroke_request* unpacked,
+                                               uint8_t keys[UNIFYING_MULTIMEDIA_KEYS_LEN]);
+
+/*!
+ * Pack a \ref unifying_multimeia_keystroke_request into a byte array.
+ * 
+ * \param[out]  packed      Pointer to byte array that is at least
+ *                          \ref UNIFYING_MULTIMEDIA_KEYSTROKE_REQUEST_LEN bytes long.
+ * \param[in]   unpacked    Pointer to a \ref unifying_multimeia_keystroke_request to pack.
+ */
+void unifying_multimeia_keystroke_request_pack(uint8_t packed[UNIFYING_MULTIMEDIA_KEYSTROKE_REQUEST_LEN],
+                                               const struct unifying_multimeia_keystroke_request* unpacked);
 
 /*!
  * Initialize a \ref unifying_mouse_request structure.
  * 
  * \param[out]  unpacked    Pointer to a \ref unifying_mouse_request to initialize.
  * \param[in]   buttons     Bitfield where each bit corresponds to a mouse button.
- * \param[in]   move_x      X axis mouse movement.
  * \param[in]   move_y      Y axis mouse movement.
- * \param[in]   wheel_x     X axis scroll wheel movement.
+ * \param[in]   move_x      X axis mouse movement.
  * \param[in]   wheel_y     Y axis scroll wheel movement.
+ * \param[in]   wheel_x     X axis scroll wheel movement.
  * 
  * \note    X and Y movement is packed as a pair of big-endian signed 12-bit integers.
  *          The X and Y movement data is expected to have already been clamped to a signed 12-bit range
@@ -615,11 +648,11 @@ void unifying_encrypted_keystroke_request_pack(uint8_t packed[UNIFYING_ENCRYPTED
  * \see unifying_mouse_request
  */
 void unifying_mouse_request_init(struct unifying_mouse_request* unpacked,
-                                      uint8_t buttons,
-                                      int16_t move_x,
-                                      int16_t move_y,
-                                      int8_t wheel_x,
-                                      int8_t wheel_y);
+                                 uint8_t buttons,
+                                 int16_t move_y,
+                                 int16_t move_x,
+                                 int8_t wheel_y,
+                                 int8_t wheel_x);
 
 /*!
  * Pack a \ref unifying_mouse_request into a byte array.

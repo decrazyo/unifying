@@ -5,6 +5,8 @@
  * 
  * \todo    Define HID++ 1.0 errors as an enum
  * 
+ * \todo    Define mouse buttons as an enum
+ * 
  * \todo    Add definitions for constants used in \ref unifying_data.c
  */
 
@@ -85,6 +87,11 @@
  * Number keyboard scancodes that can be transmitted in a single encrypted payload.
  */
 #define UNIFYING_KEYS_LEN 6
+
+/*!
+ * Number keyboard scancodes that can be transmitted in a single encrypted payload.
+ */
+#define UNIFYING_MULTIMEDIA_KEYS_LEN 4
 
 /*!
  * Size of the first pairing request in bytes.
@@ -286,6 +293,31 @@
  * Size of a mouse request in bytes.
  */
 #define UNIFYING_MOUSE_REQUEST_LEN 10
+
+/*!
+ * Bitfield indicating the left mouse button.
+ */
+#define UNIFYING_MOUSE_BUTTON_LEFT 0x01
+
+/*!
+ * Bitfield indicating the right mouse button.
+ */
+#define UNIFYING_MOUSE_BUTTON_RIGHT 0x02
+
+/*!
+ * Bitfield indicating the middle mouse button.
+ */
+#define UNIFYING_MOUSE_BUTTON_MIDDLE 0x04
+
+/*!
+ * Bitfield indicating the back mouse button.
+ */
+#define UNIFYING_MOUSE_BUTTON_BACK 0x08
+
+/*!
+ * Bitfield indicating the forward mouse button.
+ */
+#define UNIFYING_MOUSE_BUTTON_FORWARD 0x10
 
 /*!
  * Bitmask for de-obfuscate an AES key.

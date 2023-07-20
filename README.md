@@ -12,9 +12,6 @@ The provided Arduino example is dependent on the RF24 library.
 https://github.com/nRF24/RF24
 
 ## TODO
-- [ ] Add mouse movement payloads
-- [ ] Add multimedia payloads
-- [ ] Add wake up payloads
 - [ ] Add proper HID++ response payloads
 - [ ] Add more examples
 - [ ] General code cleanup
@@ -25,6 +22,9 @@ https://github.com/nRF24/RF24
 - [x] HID++ error response payloads
 - [x] Encrypted keystroke payloads
 - [x] Add documentation
+- [x] Add mouse payloads
+- [x] Add multimedia payloads
+- [x] Add wake up payloads
 
 ## See also
 [Hacking Logitech Unifying DC612 talk](https://www.youtube.com/watch?v=10lE96BBOF8)  

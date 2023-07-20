@@ -342,18 +342,31 @@ void unifying_encrypted_keystroke_request_pack(uint8_t packed[UNIFYING_ENCRYPTED
     packed[21] = unpacked->checksum;
 }
 
+void unifying_multimeia_keystroke_request_init(struct unifying_multimeia_keystroke_request* unpacked,
+                                               uint8_t keys[UNIFYING_MULTIMEDIA_KEYS_LEN])
+{
+    memset(unpacked, 0, sizeof(struct unifying_multimeia_keystroke_request));
+    unpacked->frame = 0xC3;
+    memcpy(unpacked->keys, keys, sizeof(unpacked->keys));
+    unpacked->checksum = unifying_checksum((uint8_t*) unpacked, sizeof(struct unifying_multimeia_keystroke_request));
+}
 
-
-// TODO: Define other keystroke types here.
-
-
+void unifying_multimeia_keystroke_request_pack(uint8_t packed[UNIFYING_MULTIMEDIA_KEYSTROKE_REQUEST_LEN],
+                                               const struct unifying_multimeia_keystroke_request* unpacked)
+{
+    packed[0] = unpacked->unknown_0;
+    packed[1] = unpacked->frame;
+    memcpy(&packed[2], unpacked->keys, sizeof(unpacked->keys));
+    memcpy(&packed[6], unpacked->unknown_6_8, sizeof(unpacked->unknown_6_8));
+    packed[9] = unpacked->checksum;
+}
 
 void unifying_mouse_request_init(struct unifying_mouse_request* unpacked,
-                                      uint8_t buttons,
-                                      int16_t move_x,
-                                      int16_t move_y,
-                                      int8_t wheel_x,
-                                      int8_t wheel_y)
+                                 uint8_t buttons,
+                                 int16_t move_y,
+                                 int16_t move_x,
+                                 int8_t wheel_y,
+                                 int8_t wheel_x)
 {
     memset(unpacked, 0, sizeof(struct unifying_mouse_request));
     unpacked->frame = 0xC2;
@@ -362,24 +375,33 @@ void unifying_mouse_request_init(struct unifying_mouse_request* unpacked,
     unpacked->move_y = move_y;
     unpacked->wheel_x = wheel_x;
     unpacked->wheel_y = wheel_y;
-    unpacked->checksum = unifying_checksum((uint8_t*) unpacked, sizeof(struct unifying_mouse_request));
 }
 
 void unifying_mouse_request_pack(uint8_t packed[UNIFYING_MOUSE_REQUEST_LEN],
-                                      const struct unifying_mouse_request* unpacked)
+                                 const struct unifying_mouse_request* unpacked)
 {
     packed[0] = unpacked->unknown_0;
     packed[1] = unpacked->frame;
     packed[2] = unpacked->buttons;
     packed[3] = unpacked->unknown_3;
 
-    packed[4] = (unpacked->move_x >> 4) & 0xFF;
-    packed[5] = ((unpacked->move_x << 4) | (unpacked->move_y >> 8)) & 0xFF;
-    packed[6] = (unpacked->move_y >> 0) & 0xFF;
+    // X and Y axis movement packing.
+    // YY XY XX
+    //  | ||  |
+    //  | ||  '- bytes 4-11 of X axis movement
+    //  | ||
+    //  | |'- byte 8-11 of Y axis movement
+    //  | |
+    //  | '- bytes 0-3 of X axis movement
+    //  |
+    //  '- bytes 0-7 of Y axis movement
+    packed[4] = unpacked->move_y & 0xFF;
+    packed[5] = ((unpacked->move_y >> 8) & 0x0F) | ((unpacked->move_x << 4) & 0xF0);
+    packed[6] = (unpacked->move_x >> 4) & 0xFF;
 
-    packed[7] = unpacked->wheel_x;
-    packed[8] = unpacked->wheel_y;
-    packed[9] = unpacked->checksum;
+    packed[7] = unpacked->wheel_y;
+    packed[8] = unpacked->wheel_x;
+    packed[9] = unifying_checksum(packed, UNIFYING_MOUSE_REQUEST_LEN - 1);
 }
 
 

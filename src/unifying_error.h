@@ -64,6 +64,11 @@ extern const char* unifying_error_name[UNIFYING_ERROR_COUNT];
  */
 extern const char* unifying_error_message[UNIFYING_ERROR_COUNT];
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /*!
  * Get the name of the supplied error.
  * 
@@ -81,5 +86,9 @@ const char* unifying_get_error_name(enum unifying_error err);
  * \return  Error message.
  */
 const char* unifying_get_error_message(enum unifying_error err);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

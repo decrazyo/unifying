@@ -602,8 +602,10 @@ enum unifying_error unifying_pair(struct unifying_state* state,
     }
 
     // We've received a new address for all future communication with the receiver.
-    // TODO: handle potential errors.
-    unifying_state_address_set(state, pair_response_1.address);
+    if(unifying_state_address_set(state, pair_response_1.address))
+    {
+        return UNIFYING_SET_ADDRESS_ERROR;
+    }
 
     err = unifying_pair_step_2(state, crypto, serial, capabilities);
 
@@ -728,6 +730,49 @@ enum unifying_error unifying_pair(struct unifying_state* state,
     return UNIFYING_SUCCESS;
 }
 
+enum unifying_error unifying_connect(struct unifying_state* state)
+{
+    enum unifying_error err;
+    struct unifying_transmit_entry* transmit_entry;
+    struct unifying_short_wake_up_request request;
+
+    transmit_entry = unifying_transmit_entry_create(UNIFYING_SHORT_WAKE_UP_REQUEST_LEN, state->default_timeout);
+
+    if(!transmit_entry)
+    {
+        return UNIFYING_CREATE_ERROR;
+    }
+
+    unifying_short_wake_up_request_init(&request, state->address[4]);
+    unifying_short_wake_up_request_pack(transmit_entry->payload, &request);
+
+    err = unifying_ring_buffer_push_back(state->transmit_buffer, transmit_entry);
+
+    if(err)
+    {
+        unifying_transmit_entry_destroy(transmit_entry);
+        return err;
+    }
+
+    // We don't know which channel the receiver is listening on.
+    // Try to connect on each channel until one works.
+    for(int i = 0; i < UNIFYING_CHANNELS_LEN; i++)
+    {
+        // Transmit the initial paring request.
+        err = unifying_loop(state, true, true, false);
+
+        // If transmission fails then we'll try again on another channel.
+        if(!err)
+        {
+            // Success.
+            // Continue pairing.
+            break;
+        }
+    }
+
+    return err;
+}
+
 enum unifying_error unifying_set_timeout(struct unifying_state* state, uint16_t timeout)
 {
     enum unifying_error err;
@@ -794,4 +839,93 @@ enum unifying_error unifying_encrypted_keystroke(struct unifying_state* state,
     }
 
     return UNIFYING_SUCCESS;
+}
+
+enum unifying_error unifying_multimeia_keystroke(struct unifying_state* state,
+                                                 uint8_t keys[UNIFYING_MULTIMEDIA_KEYS_LEN])
+{
+    enum unifying_error err;
+    uint8_t payload[UNIFYING_MULTIMEDIA_KEYSTROKE_REQUEST_LEN];
+    struct unifying_multimeia_keystroke_request request;
+
+    unifying_multimeia_keystroke_request_init(&request, keys);
+    unifying_multimeia_keystroke_request_pack(payload, &request);
+
+    err = unifying_transmit(state, payload, UNIFYING_MULTIMEDIA_KEYSTROKE_REQUEST_LEN, state->default_timeout);
+
+    if(err)
+    {
+        return err;
+    }
+
+    if(state->interface->payload_available()) {
+        return unifying_receive(state);
+    }
+
+    return UNIFYING_SUCCESS;
+}
+
+// enum unifying_error unifying_mouse(struct unifying_state* state,
+//                                    uint8_t buttons,
+//                                    int16_t move_y,
+//                                    int16_t move_x,
+//                                    int8_t wheel_y,
+//                                    int8_t wheel_x)
+// {
+//     enum unifying_error err;
+//     uint8_t payload[UNIFYING_MOUSE_REQUEST_LEN];
+//     struct unifying_mouse_request request;
+
+//     move_x = unifying_int12_clamp(move_x);
+//     move_y = unifying_int12_clamp(move_y);
+
+//     unifying_mouse_request_init(&request, buttons, move_y, move_x, wheel_y, wheel_x);
+//     unifying_mouse_request_pack(payload, &request);
+
+//     err = unifying_transmit(state, payload, UNIFYING_MOUSE_REQUEST_LEN, state->default_timeout);
+
+//     if(err)
+//     {
+//         return err;
+//     }
+
+//     if(state->interface->payload_available()) {
+//         return unifying_receive(state);
+//     }
+
+//     return UNIFYING_SUCCESS;
+// }
+
+enum unifying_error unifying_mouse(struct unifying_state* state,
+                                   uint8_t buttons,
+                                   int16_t move_y,
+                                   int16_t move_x,
+                                   int8_t wheel_y,
+                                   int8_t wheel_x)
+{
+    enum unifying_error err;
+    struct unifying_transmit_entry* transmit_entry;
+    struct unifying_mouse_request request;
+
+    move_y = unifying_int12_clamp(move_y);
+    move_x = unifying_int12_clamp(move_x);
+
+    transmit_entry = unifying_transmit_entry_create(UNIFYING_MOUSE_REQUEST_LEN, state->default_timeout);
+
+    if(!transmit_entry)
+    {
+        return UNIFYING_CREATE_ERROR;
+    }
+
+    unifying_mouse_request_init(&request, buttons, move_y, move_x, wheel_y, wheel_x);
+    unifying_mouse_request_pack(transmit_entry->payload, &request);
+
+    err = unifying_ring_buffer_push_back(state->transmit_buffer, transmit_entry);
+
+    if(err)
+    {
+        unifying_transmit_entry_destroy(transmit_entry);
+    }
+
+    return err;
 }

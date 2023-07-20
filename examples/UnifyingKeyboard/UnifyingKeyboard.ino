@@ -11,7 +11,7 @@
 #define INPUT_PIN 2
 #define HALT_PIN 3
 
-#define TRANSMIT_BUFFER_SIZE 50
+#define TRANSMIT_BUFFER_SIZE 8
 #define RECEIVE_BUFFER_SIZE 8
 #define SLOW_TIMEOUT 110
 
@@ -26,6 +26,7 @@ struct unifying_state state;
 
 RF24 radio(CE_PIN, CSN_PIN);
 
+// The following functions are used by the Unifying library to interface with radio hardware.
 uint8_t transmit_payload(const uint8_t* payload, uint8_t length) {
   Serial.print("Transmit: ");
   unifying_print_buffer(payload, length);
@@ -71,15 +72,7 @@ uint8_t set_channel(uint8_t channel) {
   return 0;
 }
 
-uint8_t encrypt(uint8_t data[UNIFYING_AES_DATA_LEN],
-                const uint8_t key[UNIFYING_AES_BLOCK_LEN],
-                const uint8_t iv[UNIFYING_AES_BLOCK_LEN]) {
-  struct AES_ctx ctx;
-  AES_init_ctx_iv(&ctx, key, iv);
-  AES_CTR_xcrypt_buffer(&ctx, data, UNIFYING_AES_DATA_LEN);
-  return 0;
-}
-
+// Check for key presses and send scancodes.
 void scan_keyboard_matrix() {
   uint8_t keys[UNIFYING_KEYS_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   uint8_t modifiers = 0x00;
@@ -107,7 +100,6 @@ void scan_keyboard_matrix() {
     unifying_set_timeout(&state, SLOW_TIMEOUT);
   }
 }
-
 
 void setup() {
   Serial.begin(115200);
@@ -158,13 +150,13 @@ void setup() {
                           set_address,
                           set_channel,
                           millis,
-                          encrypt);
-
+                          NULL);
 
   transmit_buffer = unifying_ring_buffer_create(TRANSMIT_BUFFER_SIZE);
   receive_buffer = unifying_ring_buffer_create(RECEIVE_BUFFER_SIZE);
 
   uint32_t aes_counter = random();
+
   unifying_state_init(&state,
                       &interface,
                       transmit_buffer,
@@ -176,11 +168,10 @@ void setup() {
                       unifying_channels[0]);
 
 
-  enum unifying_error err = UNIFYING_ERROR;
-
+  enum unifying_error err;
 
   // Try to connect to our receiver.
-  // err = unifying_connect(&state, address);
+  err = unifying_connect(&state);
 
   if(err) {
     // If we can't connect to our receiver then try pairing to a new one.
@@ -204,17 +195,13 @@ void setup() {
                         name_length);
   }
 
-  Serial.println(unifying_error_name[err]);
+  Serial.println(unifying_get_error_name(err));
 
   while(err) {
+    // If pairing failed then resume trying to connect to our receiver.
+    err = unifying_connect(&state);
     delay(100);
   }
-
-  // while(err) {
-  //   // If pairing failed then resume trying to connect to our receiver.
-  //   err = unifying_connect(&state, address);
-  //   delay(100);
-  // }
 }
 
 void loop() {
