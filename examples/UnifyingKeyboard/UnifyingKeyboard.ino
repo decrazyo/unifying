@@ -157,6 +157,9 @@ void setup() {
 
   uint32_t aes_counter = random();
 
+  // TODO: Check if we have previously paired to a receiver.
+  //       If so, load "address" and "aes_key" from non-volatile memory.
+
   unifying_state_init(&state,
                       &interface,
                       transmit_buffer,
@@ -196,6 +199,8 @@ void setup() {
   }
 
   Serial.println(unifying_get_error_name(err));
+
+  // TODO: Save "address" and "aes_key" to non-volatile memory if pairing was successful.
 
   while(err) {
     // If pairing failed then resume trying to connect to our receiver.
