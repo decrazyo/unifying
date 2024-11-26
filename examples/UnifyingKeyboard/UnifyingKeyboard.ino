@@ -1,6 +1,7 @@
 
 #include <RF24.h>
 #include <printf.h>
+#include <EEPROM.h>
 
 #include "aes.hpp"
 
@@ -15,9 +16,10 @@
 #define RECEIVE_BUFFER_SIZE 8
 #define SLOW_TIMEOUT 110
 
+int eeprom_address;
 uint8_t input_state;
-uint8_t aes_key[UNIFYING_AES_BLOCK_LEN];
 uint8_t address[UNIFYING_ADDRESS_LEN];
+uint8_t aes_key[UNIFYING_AES_BLOCK_LEN];
 
 struct unifying_interface interface;
 struct unifying_ring_buffer* transmit_buffer;
@@ -155,10 +157,13 @@ void setup() {
   transmit_buffer = unifying_ring_buffer_create(TRANSMIT_BUFFER_SIZE);
   receive_buffer = unifying_ring_buffer_create(RECEIVE_BUFFER_SIZE);
 
-  uint32_t aes_counter = random();
+  // Load connection details to non-volatile memory.
+  eeprom_address = 0;
+  EEPROM.get(eeprom_address, address);
+  eeprom_address += sizeof(address);
+  EEPROM.get(eeprom_address, aes_key);
 
-  // TODO: Check if we have previously paired to a receiver.
-  //       If so, load "address" and "aes_key" from non-volatile memory.
+  uint32_t aes_counter = random();
 
   unifying_state_init(&state,
                       &interface,
@@ -196,11 +201,18 @@ void setup() {
                         capabilities,
                         name,
                         name_length);
+
+    if(!err) {
+      // Pairing successful.
+      // Save connection details to non-volatile memory.
+      eeprom_address = 0;
+      EEPROM.put(eeprom_address, address);
+      eeprom_address += sizeof(address);
+      EEPROM.put(eeprom_address, aes_key);
+    }
   }
 
   Serial.println(unifying_get_error_name(err));
-
-  // TODO: Save "address" and "aes_key" to non-volatile memory if pairing was successful.
 
   while(err) {
     // If pairing failed then resume trying to connect to our receiver.
